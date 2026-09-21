@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>호쌤의 가상과학실험실</title>
+  
+  <!-- Fonts: Outfit (English) & Noto Sans KR (Korean) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --panel-bg: rgba(17, 24, 39, 0.7);
+      --panel-border: rgba(255, 255, 255, 0.1);
+      
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      
+      --primary: #38bdf8; /* sky-400 */
+      --secondary: #a78bfa; /* violet-400 */
+      --accent: #f43f5e; /* rose-500 */
+      --success: #34d399; /* emerald-400 */
+      --warning: #fbbf24; /* amber-400 */
+      
+      --font-main: 'Outfit', 'Noto Sans KR', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: var(--font-main);
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background-image: 
+        radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 85% 30%, rgba(167, 139, 250, 0.08) 0%, transparent 50%);
+    }
+
+    /* HEADER */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: rgba(9, 13, 22, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--panel-border);
+      z-index: 100;
+    }
+    
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+    }
+
+    .logo-text h1 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, #fff, var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .logo-text p {
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      font-weight: 300;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .nav-tab {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-sub);
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    .nav-tab:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+    }
+    .nav-tab.active {
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--primary);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    /* MAIN LAYOUT */
+    main {
+      flex: 1;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* CANVAS AREA */
+    .canvas-container {
+      flex: 1;
+      position: relative;
+      cursor: crosshair;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    
+    /* OVERLAYS */
+    .mission-overlay {
+      position: absolute;
+      top: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      padding: 1rem 2rem;
+      border-radius: 100px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      z-index: 10;
+      pointer-events: none;
+      animation: floatDown 0.6s ease-out;
+    }
+    @keyframes floatDown {
+      from { top: 0; opacity: 0; }
+      to { top: 2rem; opacity: 1; }
+    }
+    .mission-overlay i {
+      color: var(--warning);
+      font-size: 1.2rem;
+    }
+    .mission-overlay span {
+      font-weight: 500;
+      letter-spacing: -0.3px;
+    }
+
+    /* CONTROLS PANEL */
+    .controls-panel {
+      width: 320px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-left: 1px solid var(--panel-border);
+      display: flex;
+      flex-direction: column;
+      z-index: 20;
+    }
+    
+    .panel-section {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--panel-border);
+    }
+    .panel-section h3 {
+      font-size: 0.9rem;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* TOGGLE SWITCHES */
+    .lens-selector {
+      display: flex;
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      padding: 0.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .lens-btn {
+      flex: 1;
+      padding: 0.6rem;
+      border: none;
+      background: transparent;
+      color: var(--text-sub);
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .lens-btn.active {
+      background: var(--primary);
+      color: #000;
+      box-shadow: 0 2px 10px rgba(56, 189, 248, 0.4);
+    }
+
+    /* SLIDERS */
+    .control-group {
+      margin-bottom: 1.2rem;
+    }
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+    .control-value {
+      color: var(--primary);
+      font-family: monospace;
+      font-weight: bold;
+    }
+    input[type=range] {
+      width: 100%;
+      -webkit-appearance: none;
+      background: transparent;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 16px;
+      width: 16px;
+      border-radius: 50%;
+      background: var(--primary);
+      margin-top: -5px;
+      cursor: grab;
+      box-shadow: 0 0 10px rgba(56,189,248,0.5);
+    }
+    input[type=range]:active::-webkit-slider-thumb {
+      cursor: grabbing;
+      transform: scale(1.2);
+    }
+
+    /* CHECKBOXES */
+    .ray-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 0.8rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .ray-toggle input {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--text-sub);
+      border-radius: 4px;
+      outline: none;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .ray-toggle input:checked {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+    .ray-toggle input:checked::after {
+      content: '\f00c';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      color: #000;
+      font-size: 10px;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* INFO PANEL */
+    .info-card {
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      padding: 1rem;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+    .info-row:last-child { margin-bottom: 0; }
+    .info-label { color: var(--text-sub); }
+    .info-value { font-weight: 600; color: #fff; }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-top: 0.5rem;
+    }
+    .status-real { background: rgba(52, 211, 153, 0.2); color: var(--success); }
+    .status-virtual { background: rgba(244, 63, 94, 0.2); color: var(--accent); }
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-container">
+      <div class="logo-icon"><i class="fa-solid fa-flask"></i></div>
+      <div class="logo-text">
+        <h1>호쌤의 가상과학실험실</h1>
+        <p>HOS LAB : Virtual Science Experience</p>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active"><i class="fa-solid fa-eye"></i> 광학실험실</button>
+      <button class="nav-tab"><i class="fa-solid fa-lock"></i> 역학실험실 (준비중)</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="mission-overlay">
+      <i class="fa-solid fa-lightbulb"></i>
+      <span id="mission-text">물체(화살표)를 드래그하여 초점 안팎으로 이동시켜 보세요!</span>
+    </div>
+
+    <div class="canvas-container" id="canvas-container">
+      <canvas id="simCanvas"></canvas>
+    </div>
+
+    <aside class="controls-panel">
+      
+      <div class="panel-section">
+        <h3><i class="fa-solid fa-sliders"></i> 렌즈 설정</h3>
+        
+        <div class="lens-selector">
+          <button class="lens-btn active" onclick="setLensType('convex')">볼록 렌즈</button>
+          <button class="lens-btn" onclick="setLensType('concave')">오목 렌즈</button>
+        </div>
+
+        <div class="control-group">
+          <div class="control-header">
+            <span>초점 거리 (<span id="focal-display">150</span>px)</span>
+          </div>
+          <input type="range" id="focal-slider" min="50" max="300" value="150">
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h3><i class="fa-solid fa-arrows-to-eye"></i> 빛의 경로 작도</h3>
+        <label class="ray-toggle">
+          <input type="checkbox" id="ray1-toggle" checked>
+          <span style="color: #38bdf8;">평행하게 입사한 빛</span>
+        </label>
+        <label class="ray-toggle">
+          <input type="checkbox" id="ray2-toggle" checked>
+          <span style="color: #34d399;">렌즈 중심을 지나는 빛</span>
+        </label>
+        <label class="ray-toggle">
+          <input type="checkbox" id="ray3-toggle" checked>
+          <span style="color: #f43f5e;">초점을 지나는 빛</span>
+        </label>
+      </div>
+
+      <div class="panel-section" style="flex: 1;">
+        <h3><i class="fa-solid fa-chart-simple"></i> 상(Image) 정보</h3>
+        <div class="info-card">
+          <div class="info-row">
+            <span class="info-label">물체 거리 (a)</span>
+            <span class="info-value"><span id="info-obj-dist">0</span>px</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">상의 거리 (b)</span>
+            <span class="info-value"><span id="info-img-dist">0</span>px</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">배율 (m)</span>
+            <span class="info-value"><span id="info-mag">1.0</span>x</span>
+          </div>
+          <div style="text-align: center; margin-top: 1rem;">
+            <div id="status-badge" class="status-badge status-real">도립 실상</div>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('canvas-container');
+
+    // State Variables
+    let width, height, centerX, centerY;
+    let lensType = 'convex'; // 'convex' or 'concave'
+    let focalLength = 150;
+    
+    // Object (Arrow)
+    let obj = {
+      x: -300, // relative to center
+      y: 0,
+      height: 80,
+      isDragging: false
+    };
+
+    // UI Elements
+    const focalSlider = document.getElementById('focal-slider');
+    const focalDisplay = document.getElementById('focal-display');
+    const ray1Toggle = document.getElementById('ray1-toggle');
+    const ray2Toggle = document.getElementById('ray2-toggle');
+    const ray3Toggle = document.getElementById('ray3-toggle');
+    
+    const infoObjDist = document.getElementById('info-obj-dist');
+    const infoImgDist = document.getElementById('info-img-dist');
+    const infoMag = document.getElementById('info-mag');
+    const statusBadge = document.getElementById('status-badge');
+    const missionText = document.getElementById('mission-text');
+
+    function resize() {
+      width = container.clientWidth;
+      height = container.clientHeight;
+      canvas.width = width;
+      canvas.height = height;
+      centerX = width / 2;
+      centerY = height / 2;
+      render();
+    }
+    window.addEventListener('resize', resize);
+
+    // Initial setup
+    focalSlider.addEventListener('input', (e) => {
+      focalLength = parseInt(e.target.value);
+      focalDisplay.innerText = focalLength;
+      render();
+    });
+
+    [ray1Toggle, ray2Toggle, ray3Toggle].forEach(t => t.addEventListener('change', render));
+
+    window.setLensType = function(type) {
+      lensType = type;
+      document.querySelectorAll('.lens-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      render();
+    }
+
+    // Mouse Events for Dragging
+    function getMousePos(e) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: e.clientX - rect.left - centerX,
+        y: e.clientY - rect.top - centerY
+      };
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      const pos = getMousePos(e);
+      // Hit test for object base or tip
+      if (Math.abs(pos.x - obj.x) < 30 && pos.y < 0 && pos.y > -obj.height - 20) {
+        obj.isDragging = true;
+        canvas.style.cursor = 'grabbing';
+      }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (obj.isDragging) {
+        const pos = getMousePos(e);
+        // Only allow dragging on the left side of lens
+        obj.x = Math.min(-20, pos.x);
+        render();
+      } else {
+        const pos = getMousePos(e);
+        if (Math.abs(pos.x - obj.x) < 30 && pos.y < 0 && pos.y > -obj.height - 20) {
+          canvas.style.cursor = 'grab';
+        } else {
+          canvas.style.cursor = 'crosshair';
+        }
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (obj.isDragging) {
+        obj.isDragging = false;
+        canvas.style.cursor = 'crosshair';
+        render(); // update badge anim maybe
+      }
+    });
+
+    // Physics Engine
+    function calculateImage() {
+      // Thin lens equation: 1/f = 1/do + 1/di
+      // do is positive for real object
+      const do_val = Math.abs(obj.x);
+      
+      // For convex, f is positive. For concave, f is negative.
+      let f = lensType === 'convex' ? focalLength : -focalLength;
+      
+      let di;
+      if (do_val === f) {
+        di = Infinity; // Image at infinity
+      } else {
+        di = 1 / (1/f - 1/do_val);
+      }
+      
+      let m = -di / do_val;
+      
+      return { do: do_val, di: di, m: m, f: f };
+    }
+
+    // Drawing Functions
+    function render() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.save();
+      ctx.translate(centerX, centerY);
+
+      drawOpticalAxis();
+      drawFocalPoints();
+      drawLens();
+      
+      const imgData = calculateImage();
+      
+      // Update UI Info
+      updateInfoPanel(imgData);
+
+      // Draw rays
+      drawRays(imgData);
+
+      // Draw Objects
+      drawArrow(obj.x, obj.height, '#fbbf24', '물체'); // Object
+      
+      if (Math.abs(imgData.di) !== Infinity && Math.abs(imgData.di) < 5000) {
+        drawArrow(imgData.di, obj.height * Math.abs(imgData.m), 
+                 imgData.di > 0 ? '#34d399' : '#f43f5e', 
+                 '상', imgData.m > 0);
+      }
+
+      ctx.restore();
+    }
+
+    function drawOpticalAxis() {
+      ctx.beginPath();
+      ctx.moveTo(-width/2, 0);
+      ctx.lineTo(width/2, 0);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([5, 5]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    function drawFocalPoints() {
+      const f = focalLength;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      
+      // F (front) and F' (back)
+      [-f, f, -f*2, f*2].forEach((x, i) => {
+        ctx.beginPath();
+        ctx.arc(x, 0, 4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.font = '12px Outfit';
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.fillText(i < 2 ? 'F' : '2F', x - 4, 16);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      });
+    }
+
+    function drawLens() {
+      ctx.fillStyle = 'rgba(167, 139, 250, 0.15)';
+      ctx.strokeStyle = 'rgba(167, 139, 250, 0.6)';
+      ctx.lineWidth = 2;
+      
+      const lh = 180;
+      const lw = 20;
+      
+      ctx.beginPath();
+      if (lensType === 'convex') {
+        ctx.ellipse(0, 0, lw, lh, 0, 0, Math.PI * 2);
+      } else {
+        ctx.moveTo(-lw, -lh);
+        ctx.quadraticCurveTo(0, -lh/2, 0, -lh); // simple representation
+        // For a beautiful concave lens:
+        ctx.moveTo(-lw, -lh);
+        ctx.bezierCurveTo(lw*0.2, -lh*0.5, lw*0.2, lh*0.5, -lw, lh);
+        ctx.lineTo(lw, lh);
+        ctx.bezierCurveTo(-lw*0.2, lh*0.5, -lw*0.2, -lh*0.5, lw, -lh);
+        ctx.closePath();
+      }
+      ctx.fill();
+      ctx.stroke();
+
+      // Center line
+      ctx.beginPath();
+      ctx.moveTo(0, -lh - 20);
+      ctx.lineTo(0, lh + 20);
+      ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+      ctx.stroke();
+    }
+
+    function drawArrow(x, h, color, label, isVirtualUpright = false) {
+      const isUpright = (label === '물체') || isVirtualUpright;
+      const sign = isUpright ? -1 : 1;
+      
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 4;
+      
+      // If virtual, dash the arrow
+      if (label === '상' && isVirtualUpright) {
+        ctx.setLineDash([8, 6]);
+      } else {
+        ctx.setLineDash([]);
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h * sign);
+      ctx.stroke();
+
+      // Arrow head
+      ctx.beginPath();
+      ctx.moveTo(x, h * sign);
+      ctx.lineTo(x - 8, (h - 12) * sign);
+      ctx.lineTo(x + 8, (h - 12) * sign);
+      ctx.fill();
+      
+      ctx.setLineDash([]);
+
+      ctx.font = '600 14px Noto Sans KR';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, x, h * sign + (isUpright ? -15 : 25));
+    }
+
+    function drawRays(data) {
+      if (Math.abs(data.di) === Infinity) return; // Parallel rays, image at inf
+
+      const h = -obj.height;
+      const do_val = obj.x;
+      const di_val = data.di;
+      const hi = -obj.height * Math.abs(data.m) * (data.m > 0 ? 1 : -1);
+      
+      ctx.lineWidth = 2;
+
+      // Ray 1: Parallel to principal axis -> through focus
+      if (ray1Toggle.checked) {
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.8)';
+        ctx.beginPath();
+        ctx.moveTo(do_val, h);
+        ctx.lineTo(0, h);
+        if (lensType === 'convex') {
+          // Through back focus
+          ctx.lineTo(focalLength, 0);
+          ctx.lineTo(width/2, h + (width/2)/focalLength * -h);
+          
+          if(data.di < 0) { // virtual image extension
+            ctx.moveTo(0, h);
+            ctx.setLineDash([4,4]);
+            ctx.lineTo(di_val, hi);
+            ctx.setLineDash([]);
+          }
+        } else {
+          // Diverges from front focus
+          ctx.lineTo(width/2, h - (width/2)/(-focalLength) * -h);
+          
+          ctx.moveTo(0, h);
+          ctx.setLineDash([4,4]);
+          ctx.lineTo(-focalLength, 0); // extend back to front focus
+          ctx.setLineDash([]);
+        }
+        ctx.stroke();
+      }
+
+      // Ray 2: Through optical center -> straight
+      if (ray2Toggle.checked) {
+        ctx.strokeStyle = 'rgba(52, 211, 153, 0.8)';
+        ctx.beginPath();
+        ctx.moveTo(do_val, h);
+        ctx.lineTo(0, 0);
+        ctx.lineTo(width/2, (width/2) * (0 - h) / (0 - do_val));
+        
+        if (data.di < 0) {
+          ctx.moveTo(0,0);
+          ctx.setLineDash([4,4]);
+          ctx.lineTo(di_val, hi);
+          ctx.setLineDash([]);
+        }
+        ctx.stroke();
+      }
+
+      // Ray 3: Through front focus -> parallel
+      if (ray3Toggle.checked) {
+        ctx.strokeStyle = 'rgba(244, 63, 94, 0.8)';
+        ctx.beginPath();
+        ctx.moveTo(do_val, h);
+        
+        if (lensType === 'convex') {
+           // Towards front focus
+           const slope = h / (do_val - (-focalLength));
+           const yAtLens = slope * focalLength; // distance from focus to lens is f
+           ctx.lineTo(0, yAtLens);
+           ctx.lineTo(width/2, yAtLens);
+           
+           if(data.di < 0) {
+             ctx.moveTo(0, yAtLens);
+             ctx.setLineDash([4,4]);
+             ctx.lineTo(di_val, yAtLens);
+             ctx.setLineDash([]);
+           }
+        } else {
+           // Towards back focus
+           const slope = (0 - h) / (focalLength - do_val);
+           const yAtLens = h + slope * Math.abs(do_val);
+           ctx.lineTo(0, yAtLens);
+           ctx.lineTo(width/2, yAtLens);
+           
+           ctx.moveTo(0, yAtLens);
+           ctx.setLineDash([4,4]);
+           ctx.lineTo(di_val, yAtLens);
+           ctx.setLineDash([]);
+        }
+        ctx.stroke();
+      }
+    }
+
+    function updateInfoPanel(data) {
+      infoObjDist.innerText = Math.round(data.do);
+      
+      if (Math.abs(data.di) === Infinity) {
+        infoImgDist.innerText = '∞ (무한대)';
+        infoMag.innerText = '-';
+        statusBadge.className = 'status-badge';
+        statusBadge.innerText = '상 없음 (평행)';
+        statusBadge.style.background = 'rgba(255,255,255,0.1)';
+        statusBadge.style.color = '#fff';
+      } else {
+        infoImgDist.innerText = Math.round(Math.abs(data.di));
+        infoMag.innerText = Math.abs(data.m).toFixed(2);
+        
+        let typeText = '';
+        if (data.di > 0) {
+          typeText = '도립 실상';
+          statusBadge.className = 'status-badge status-real';
+        } else {
+          typeText = '정립 허상';
+          statusBadge.className = 'status-badge status-virtual';
+        }
+        
+        if (Math.abs(data.m) > 1.05) typeText = `확대된 ${typeText}`;
+        else if (Math.abs(data.m) < 0.95) typeText = `축소된 ${typeText}`;
+        else typeText = `같은 크기의 ${typeText}`;
+
+        statusBadge.innerText = typeText;
+
+        // Mission logic
+        if (lensType === 'convex' && data.di < 0 && data.do < focalLength) {
+          missionText.innerText = "훌륭해요! 초점 안에 물체가 있어 확대된 정립 허상이 생겼습니다.";
+          missionText.style.color = 'var(--success)';
+        } else if (lensType === 'convex' && data.do > focalLength) {
+          missionText.innerText = "물체가 초점 밖에 있어 스크린에 맺히는 도립 실상이 만들어집니다.";
+          missionText.style.color = 'var(--text-main)';
+        } else if (lensType === 'concave') {
+          missionText.innerText = "오목 렌즈는 항상 축소된 정립 허상만 만들어냅니다.";
+          missionText.style.color = 'var(--primary)';
+        }
+      }
+    }
+
+    // Init
+    setTimeout(() => {
+      resize();
+    }, 100);
+
+  </script>
+</body>
+</html>
